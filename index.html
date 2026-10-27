@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1f2a44">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="聽道">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="stylesheet" href="css/app.css">
+  <title>聽道 — 即時講道轉錄與經節提示</title>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">📖</span>
+    <div><h1>聽道</h1><p class="sub">即時轉錄・經節自動提示</p></div>
+  </div>
+  <button id="btnSettings" class="icon-btn" aria-label="設定與詞庫">⚙️</button>
+</header>
+
+<main>
+  <div id="banner" class="banner" hidden></div>
+
+  <section class="card lookup">
+    <form id="lookupForm" autocomplete="off">
+      <input id="lookupInput" type="search" inputmode="text" placeholder="查經文：約 3:16、創1:1、詩篇23篇" aria-label="查詢經文">
+      <button type="submit">查經</button>
+    </form>
+  </section>
+
+  <section class="card transcript-card">
+    <div class="card-head">
+      <h2>逐字稿</h2>
+      <div class="head-tools">
+        <span id="statusDot" class="dot" title="待機"></span><span id="statusText" class="status">待機中</span>
+      </div>
+    </div>
+    <div id="transcript" class="transcript" aria-live="polite">
+      <p class="empty" id="emptyHint">按下方「開始聆聽」，或用「貼上文字」測試。聽到經節（例如「約翰福音三章十六節」「羅8:28」）會自動標成可點選的經文提示。</p>
+    </div>
+    <div id="interim" class="interim" aria-hidden="true"></div>
+  </section>
+
+  <section class="card verses-card">
+    <div class="card-head"><h2>本次提到的經文</h2><span id="verseCount" class="muted">0</span></div>
+    <div id="verseStrip" class="strip"><span class="muted small">尚未偵測到經節</span></div>
+  </section>
+
+  <section class="card paste-card" id="pasteCard" hidden>
+    <div class="card-head"><h2>貼上文字測試（不需麥克風）</h2></div>
+    <textarea id="pasteArea" rows="5" placeholder="貼上一段講道文字，例如：今天我們來看約翰福音三章十六節……"></textarea>
+    <div class="row">
+      <button id="btnPasteSend" class="btn primary">送入逐字稿</button>
+      <button id="btnSample" class="btn">載入範例</button>
+    </div>
+  </section>
+
+  <section class="soon">
+    <h2 class="soon-title">即將推出</h2>
+    <div class="soon-grid">
+      <div class="soon-card" aria-disabled="true"><span class="tag">coming next</span><h3>💡 相關經文聯想</h3><p>聽到一半浮現某段經文時，自動提示可能相關的經節。</p></div>
+      <div class="soon-card" aria-disabled="true"><span class="tag">coming next</span><h3>⚠️ 教義警示</h3><p>辨識似是而非或偏離聖經的說法，點開看原因與對照經文。</p></div>
+      <div class="soon-card" aria-disabled="true"><span class="tag">coming next</span><h3>🗂️ 摘要與存檔</h3><p>每篇講道自動整理重點，依日期、經節、主題查詢。</p></div>
+    </div>
+  </section>
+  <footer class="foot">和合本（新標點，公版）內建離線　·　<span id="bibleStatus">載入中…</span></footer>
+</main>
+
+<nav class="dock" aria-label="操作列">
+  <button id="btnPaste" class="btn" aria-pressed="false">✍️ 貼上文字</button>
+  <button id="btnMic" class="mic" aria-pressed="false"><span class="mic-ico">🎙️</span><span id="micLabel">開始聆聽</span></button>
+  <button id="btnMore" class="btn">⋯ 更多</button>
+</nav>
+
+<div id="toast" class="toast" hidden></div>
+
+<!-- verse modal (bottom sheet on mobile) -->
+<div id="modal" class="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="sheet-head">
+      <div><h3 id="mTitle"></h3><p id="mSub" class="muted small"></p></div>
+      <button id="mClose" class="icon-btn" aria-label="關閉">✕</button>
+    </div>
+    <div id="mBody" class="sheet-body"></div>
+    <div class="sheet-foot">
+      <button id="mCtx" class="btn">前後文</button>
+      <button id="mChapter" class="btn">整章</button>
+      <button id="mCopy" class="btn">複製</button>
+    </div>
+  </div>
+</div>
+
+<!-- more menu -->
+<div id="moreMenu" class="modal" hidden>
+  <div class="sheet small-sheet" role="dialog" aria-modal="true">
+    <div class="sheet-head"><h3>更多</h3><button class="icon-btn" data-close aria-label="關閉">✕</button></div>
+    <div class="menu">
+      <button id="mCopyAll" class="btn wide">複製整份逐字稿</button>
+      <button id="mDownload" class="btn wide">下載逐字稿（.txt）</button>
+      <button id="mClear" class="btn wide danger">清除逐字稿</button>
+    </div>
+  </div>
+</div>
+
+<!-- settings -->
+<div id="settings" class="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sTitle">
+    <div class="sheet-head"><h3 id="sTitle">設定與詞庫</h3><button class="icon-btn" data-close aria-label="關閉">✕</button></div>
+    <div class="sheet-body settings">
+      <label class="field"><span>經文用字</span>
+        <select id="optGod"><option value="神">和合本神版（神）</option><option value="上帝">和合本上帝版（上帝）</option></select></label>
+      <label class="field check"><input type="checkbox" id="optCorrect"> <span>自動修正基督教常用詞彙誤辨</span></label>
+      <label class="field check"><input type="checkbox" id="optKeepAwake"> <span>聆聽時保持螢幕不熄滅（手機建議開啟）</span></label>
+      <label class="field"><span>文字大小</span>
+        <input type="range" id="optFont" min="15" max="26" step="1"></label>
+      <label class="field"><span>詞庫（每行：正確詞=誤辨1,誤辨2；# 為註解）</span>
+        <textarea id="dictArea" rows="10" spellcheck="false"></textarea></label>
+      <div class="row">
+        <button id="dictSave" class="btn primary">儲存詞庫</button>
+        <button id="dictReset" class="btn">還原預設</button>
+      </div>
+      <p class="muted small">詞庫只存在這支手機／瀏覽器裡。修正會即時套用到逐字稿，原字詞以虛線底線標示（點一下看原本辨識的字）。</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/refs.js"></script>
+<script src="js/corrections.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
