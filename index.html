@@ -18,7 +18,7 @@
 <header class="top">
   <div class="brand">
     <span class="logo" aria-hidden="true">📖</span>
-    <div><h1>聽道</h1><p class="sub">即時轉錄・經節自動提示</p></div>
+    <div><h1>聽道</h1><p class="sub">即時轉錄・經節提示・摘要存檔</p></div>
   </div>
   <button id="btnSettings" class="icon-btn" aria-label="設定與詞庫">⚙️</button>
 </header>
@@ -31,6 +31,18 @@
       <input id="lookupInput" type="search" inputmode="text" placeholder="查經文：約 3:16、創1:1、詩篇23篇" aria-label="查詢經文">
       <button type="submit">查經</button>
     </form>
+  </section>
+
+  <section class="card sess-card">
+    <div class="sess-row">
+      <input id="sessTitle" type="text" placeholder="講道標題（留空會自動命名）" aria-label="講道標題" maxlength="80">
+      <input id="sessSpeaker" type="text" placeholder="講員" aria-label="講員" maxlength="40">
+    </div>
+    <div class="row">
+      <button id="btnFinish" class="btn primary">✅ 結束並整理摘要</button>
+      <button id="btnNewSess" class="btn">＋ 新講道</button>
+    </div>
+    <p id="sessInfo" class="muted tiny"></p>
   </section>
 
   <section class="card transcript-card">
@@ -60,24 +72,136 @@
     </div>
   </section>
 
-  <section class="soon">
-    <h2 class="soon-title">即將推出</h2>
-    <div class="soon-grid">
-      <div class="soon-card" aria-disabled="true"><span class="tag">coming next</span><h3>💡 相關經文聯想</h3><p>聽到一半浮現某段經文時，自動提示可能相關的經節。</p></div>
-      <div class="soon-card" aria-disabled="true"><span class="tag">coming next</span><h3>⚠️ 教義警示</h3><p>辨識似是而非或偏離聖經的說法，點開看原因與對照經文。</p></div>
-      <div class="soon-card" aria-disabled="true"><span class="tag">coming next</span><h3>🗂️ 摘要與存檔</h3><p>每篇講道自動整理重點，依日期、經節、主題查詢。</p></div>
-    </div>
+  <section class="card hints-card" id="hintsCard">
+    <div class="card-head"><h2>💡 相關經文聯想</h2><span id="hintCount" class="muted">0</span></div>
+    <div id="hintList" class="items"><span class="muted small">聽到引用、呼應或主題相近的經文時，會在這裡提示（離線運作，不需要金鑰）。</span></div>
   </section>
+
+  <section class="card warn-card" id="warnCard">
+    <div class="card-head"><h2>⚠️ 教義警示</h2><span id="warnCount" class="muted">0</span></div>
+    <div id="warnList" class="items"><span class="muted small">沒有需要斟酌的說法。</span></div>
+    <p class="muted tiny">提示來自規則比對（可選 AI 分析），可能誤判；對講員抱持善意，請以聖經與牧者教導為準。</p>
+  </section>
+
   <footer class="foot">和合本（新標點，公版）內建離線　·　<span id="bibleStatus">載入中…</span></footer>
 </main>
 
 <nav class="dock" aria-label="操作列">
-  <button id="btnPaste" class="btn" aria-pressed="false">✍️ 貼上文字</button>
+  <button id="btnPaste" class="btn" aria-pressed="false">✍️ 貼上</button>
   <button id="btnMic" class="mic" aria-pressed="false"><span class="mic-ico">🎙️</span><span id="micLabel">開始聆聽</span></button>
-  <button id="btnMore" class="btn">⋯ 更多</button>
+  <button id="btnArchive" class="btn">🗂️ 紀錄</button>
+  <button id="btnMore" class="btn" aria-label="更多">⋯</button>
 </nav>
 
 <div id="toast" class="toast" hidden></div>
+
+<!-- more menu -->
+<div id="moreMenu" class="modal" hidden>
+  <div class="sheet small-sheet" role="dialog" aria-modal="true">
+    <div class="sheet-head"><h3>更多</h3><button class="icon-btn" data-close aria-label="關閉">✕</button></div>
+    <div class="menu">
+      <button id="mSummary" class="btn wide">📝 整理目前這篇的摘要</button>
+      <button id="mCopyAll" class="btn wide">複製整份逐字稿</button>
+      <button id="mDownload" class="btn wide">下載逐字稿（.txt）</button>
+      <button id="mClear" class="btn wide danger">清除逐字稿</button>
+    </div>
+  </div>
+</div>
+
+<!-- settings -->
+<div id="settings" class="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sTitle">
+    <div class="sheet-head"><h3 id="sTitle">設定與詞庫</h3><button class="icon-btn" data-close aria-label="關閉">✕</button></div>
+    <div class="sheet-body settings">
+      <label class="field"><span>經文用字</span>
+        <select id="optGod"><option value="神">和合本神版（神）</option><option value="上帝">和合本上帝版（上帝）</option></select></label>
+      <label class="field check"><input type="checkbox" id="optCorrect"> <span>自動修正基督教常用詞彙誤辨</span></label>
+      <label class="field check"><input type="checkbox" id="optHints"> <span>顯示「相關經文聯想」（離線）</span></label>
+      <label class="field check"><input type="checkbox" id="optWarn"> <span>顯示「教義警示」（離線規則）</span></label>
+      <label class="field check"><input type="checkbox" id="optKeepAwake"> <span>聆聽時保持螢幕不熄滅（手機建議開啟）</span></label>
+      <label class="field"><span>文字大小</span>
+        <input type="range" id="optFont" min="15" max="26" step="1"></label>
+      <hr>
+      <h4 class="sub-h">🤖 AI 分析（選用）</h4>
+      <p class="muted small">不設定也能完整使用離線功能。若填入你自己的 API Key，可讓 AI 進一步判斷語境、產生摘要。Key 只存在這支手機／瀏覽器的 localStorage，不會上傳到聽道（聽道沒有伺服器）；啟用後，逐字稿片段會直接從你的瀏覽器送到下面的服務。</p>
+      <label class="field check"><input type="checkbox" id="llmOn"> <span>啟用 AI 分析與 AI 摘要</span></label>
+      <label class="field"><span>API 位址（OpenAI 相容）</span><input id="llmEndpoint" type="url" placeholder="https://api.openai.com/v1" autocomplete="off" spellcheck="false"></label>
+      <label class="field"><span>模型</span><input id="llmModel" type="text" placeholder="gpt-4o-mini" autocomplete="off" spellcheck="false"></label>
+      <label class="field"><span>API Key</span><input id="llmKey" type="password" placeholder="sk-…" autocomplete="off" spellcheck="false"></label>
+      <label class="field check"><input type="checkbox" id="llmJson"> <span>要求 JSON 模式（部分服務不支援時請取消）</span></label>
+      <div class="row">
+        <button id="llmSave" class="btn primary">儲存</button>
+        <button id="llmTest" class="btn">測試連線</button>
+        <button id="llmClear" class="btn danger">清除 Key</button>
+      </div>
+      <p id="llmMsg" class="muted small"></p>
+      <p class="muted tiny">瀏覽器直接呼叫需要該服務允許 CORS（OpenAI、OpenRouter、Groq、DeepSeek、本機 Ollama 等通常可以）。AI 的判斷也可能出錯，輸出只當參考。</p>
+      <hr>
+      <label class="field"><span>詞庫（每行：正確詞=誤辨1,誤辨2；# 為註解）</span>
+        <textarea id="dictArea" rows="10" spellcheck="false"></textarea></label>
+      <div class="row">
+        <button id="dictSave" class="btn primary">儲存詞庫</button>
+        <button id="dictReset" class="btn">還原預設</button>
+      </div>
+      <p class="muted small">詞庫只存在這支手機／瀏覽器裡。修正會即時套用到逐字稿，原字詞以虛線底線標示（點一下看原本辨識的字）。</p>
+    </div>
+  </div>
+</div>
+
+<!-- warning detail -->
+<div id="wModal" class="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="wTitle">
+    <div class="sheet-head"><div><h3 id="wTitle"></h3><p id="wSub" class="muted small"></p></div><button class="icon-btn" data-close aria-label="關閉">✕</button></div>
+    <div id="wBody" class="sheet-body wbody"></div>
+    <div class="sheet-foot"><button id="wDismiss" class="btn">這是誤報，忽略</button><button id="wCopy" class="btn">複製</button></div>
+  </div>
+</div>
+
+<!-- summary -->
+<div id="sumModal" class="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sumTitle">
+    <div class="sheet-head"><div><h3 id="sumTitle">本篇摘要</h3><p id="sumSub" class="muted small"></p></div><button class="icon-btn" data-close aria-label="關閉">✕</button></div>
+    <div id="sumBody" class="sheet-body wbody"></div>
+    <div class="sheet-foot wrap"><button id="sumAI" class="btn" hidden>🤖 AI 摘要</button><button id="sumMd" class="btn">匯出 Markdown</button><button id="sumArchive" class="btn primary">看紀錄</button></div>
+  </div>
+</div>
+
+<!-- archive page -->
+<div id="archive" class="page" hidden>
+  <header class="top">
+    <button id="arcBack" class="icon-btn" aria-label="返回">←</button>
+    <div class="brand"><div><h1>講道紀錄</h1><p class="sub" id="arcCount"></p></div></div>
+    <button id="arcMenu" class="icon-btn" aria-label="匯出入">⋯</button>
+  </header>
+  <main>
+    <section class="card">
+      <input id="fQ" type="search" placeholder="搜尋標題、講員、內容、摘要…" aria-label="全文搜尋">
+      <div class="filters">
+        <input id="fVerse" type="text" placeholder="經節：約 3:16" aria-label="依經節">
+        <input id="fBook" type="text" placeholder="書卷：羅馬書" aria-label="依書卷">
+        <label class="dl"><span>從</span><input id="fFrom" type="date"></label>
+        <label class="dl"><span>到</span><input id="fTo" type="date"></label>
+      </div>
+      <div class="row"><button id="fClear" class="btn">清除條件</button></div>
+    </section>
+    <div id="arcList" class="arc-list"></div>
+  </main>
+  <div id="arcMore" class="arc-more" hidden>
+    <button id="arcExpJson" class="btn wide">匯出全部（JSON 備份）</button>
+    <button id="arcExpMd" class="btn wide">匯出全部（Markdown）</button>
+    <button id="arcImport" class="btn wide">匯入 JSON</button>
+    <input id="arcFile" type="file" accept="application/json,.json" hidden>
+  </div>
+</div>
+
+<!-- session detail -->
+<div id="detail" class="modal" hidden>
+  <div class="sheet tall" role="dialog" aria-modal="true" aria-labelledby="dTitle">
+    <div class="sheet-head"><div><h3 id="dTitle"></h3><p id="dSub" class="muted small"></p></div><button class="icon-btn" data-close aria-label="關閉">✕</button></div>
+    <div id="dBody" class="sheet-body wbody"></div>
+    <div class="sheet-foot wrap"><button id="dOpen" class="btn">載入續用</button><button id="dMd" class="btn">匯出 MD</button><button id="dJson" class="btn">匯出 JSON</button><button id="dDel" class="btn danger">刪除</button></div>
+  </div>
+</div>
 
 <!-- verse modal (bottom sheet on mobile) -->
 <div id="modal" class="modal" hidden>
@@ -95,42 +219,14 @@
   </div>
 </div>
 
-<!-- more menu -->
-<div id="moreMenu" class="modal" hidden>
-  <div class="sheet small-sheet" role="dialog" aria-modal="true">
-    <div class="sheet-head"><h3>更多</h3><button class="icon-btn" data-close aria-label="關閉">✕</button></div>
-    <div class="menu">
-      <button id="mCopyAll" class="btn wide">複製整份逐字稿</button>
-      <button id="mDownload" class="btn wide">下載逐字稿（.txt）</button>
-      <button id="mClear" class="btn wide danger">清除逐字稿</button>
-    </div>
-  </div>
-</div>
-
-<!-- settings -->
-<div id="settings" class="modal" hidden>
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sTitle">
-    <div class="sheet-head"><h3 id="sTitle">設定與詞庫</h3><button class="icon-btn" data-close aria-label="關閉">✕</button></div>
-    <div class="sheet-body settings">
-      <label class="field"><span>經文用字</span>
-        <select id="optGod"><option value="神">和合本神版（神）</option><option value="上帝">和合本上帝版（上帝）</option></select></label>
-      <label class="field check"><input type="checkbox" id="optCorrect"> <span>自動修正基督教常用詞彙誤辨</span></label>
-      <label class="field check"><input type="checkbox" id="optKeepAwake"> <span>聆聽時保持螢幕不熄滅（手機建議開啟）</span></label>
-      <label class="field"><span>文字大小</span>
-        <input type="range" id="optFont" min="15" max="26" step="1"></label>
-      <label class="field"><span>詞庫（每行：正確詞=誤辨1,誤辨2；# 為註解）</span>
-        <textarea id="dictArea" rows="10" spellcheck="false"></textarea></label>
-      <div class="row">
-        <button id="dictSave" class="btn primary">儲存詞庫</button>
-        <button id="dictReset" class="btn">還原預設</button>
-      </div>
-      <p class="muted small">詞庫只存在這支手機／瀏覽器裡。修正會即時套用到逐字稿，原字詞以虛線底線標示（點一下看原本辨識的字）。</p>
-    </div>
-  </div>
-</div>
-
 <script src="js/refs.js"></script>
 <script src="js/corrections.js"></script>
+<script src="js/themes.js"></script>
+<script src="js/verses.js"></script>
+<script src="js/doctrine.js"></script>
+<script src="js/summary.js"></script>
+<script src="js/archive.js"></script>
+<script src="js/llm.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
