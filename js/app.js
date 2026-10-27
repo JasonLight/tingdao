@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const R = window.TingdaoRefs, C = window.TingdaoCorrections, T = window.TingdaoThemes, V = window.TingdaoVerses,
-    D = window.TingdaoDoctrine, S = window.TingdaoSummary, A = window.TingdaoArchive, L = window.TingdaoLLM;
+    D = window.TingdaoDoctrine, PL = window.TingdaoPipeline, S = window.TingdaoSummary, A = window.TingdaoArchive, L = window.TingdaoLLM;
   const $ = (id) => document.getElementById(id);
   const LS = {
     get(k, d) { try { const v = localStorage.getItem('tingdao.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
@@ -12,23 +12,19 @@
 
   // ---------- state ----------
   let bible = null, vidx = null;
-  const settings = Object.assign({ god: '神', correct: true, keepAwake: true, font: 18, hints: true, warn: true }, LS.get('settings', {}));
+  const settings = Object.assign({ god: '神', correct: true, s2t: true, keepAwake: true, font: 18, hints: true, warn: true }, LS.get('settings', {}));
   const llmCfg = Object.assign({ endpoint: 'https://api.openai.com/v1', model: 'gpt-4o-mini', key: '', enabled: false, jsonMode: true }, LS.get('llm', {}));
   let dictText = LS.get('dict', C.DEFAULT_TEXT);
   let rules = C.parse(dictText);
   let dismissed = new Set(LS.get('dismissed', []));
   let session = A.newSession();       // current session (persisted to IndexedDB once it has content)
   let segments = [];                  // [{id,t,raw, a:runtime analysis}] mirrors session.segments
-  let seenLabels = new Map();
   let refRegistry = [];
   let listening = false, rec = null, wakeLock = null;
   let active = false, interimText = '', lastFinal = '', restartTimer = null, quickEnds = 0, lastStart = 0;
   let store = A.defaultStore();
-  let P = freshPipe();
   let uidN = 0;
   const nid = (p) => p + Date.now().toString(36) + (++uidN);
-
-  function freshPipe() { return { prev: '', recent: [], texts: [], themeLast: new Map(), hintSeen: new Map(), warnSeen: new Map(), n: 0 }; }
 
   // ---------- utils ----------
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -66,84 +62,16 @@
     return w;
   }
 
-  /** Process one finalized segment. Updates session.hints / warnings and builds seg.a (marks for the transcript). */
-  function processSegment(seg) {
-    let text = seg.raw, changes = [];
-    if (settings.correct) { const r = C.apply(seg.raw, rules); text = r.text; changes = r.changes; }
-    const refs = R.findRefs(text, { bible });
-    const a = { text, changes, refs, marks: [], newWarnings: [], newHints: [] };
-    seg.a = a;
-    P.n++;
-    P.recent.push(refs); if (P.recent.length > 3) P.recent.shift();
-    P.texts.push(text); if (P.texts.length > 3) P.texts.shift();
-    if (bible && vidx) {
-      const refVerses = expandRefs([].concat(...P.recent));
-      let ms = [];
-      try { ms = V.analyze(vidx, text, { prev: P.prev, refVerses }); } catch (e) { ms = []; }
-      for (const m of ms) {
-        const label = verseLabel(m.b, m.c, m.v);
-        const pos = text.indexOf(m.heard);
-        const span = pos >= 0 ? { s: pos, e: pos + m.heard.length } : null;
-        if (m.kind === 'near') {
-          if (!settings.warn) continue;
-          const w = D.misquoteWarning(m, label, verseText(m.b, m.c, m.v));
-          if (!w) continue;
-          const seen = P.warnSeen.get('mq' + m.id);
-          if (seen != null && P.n - seen < 6) continue;
-          P.warnSeen.set('mq' + m.id, P.n);
-          w.refLabel = label;
-          const added = addWarning(seg, w);
-          if (added) { a.newWarnings.push(added); if (span) a.marks.push({ ...span, type: 'wm', wid: added.id, pri: 2 }); }
-        } else {
-          if (m.kind === 'quote' && m.isRef) { if (span) a.marks.push({ ...span, type: 'qt', label, heard: m.heard, pri: 3 }); continue; }
-          if (!settings.hints) continue;
-          const seen = P.hintSeen.get(m.id);
-          if (seen != null && P.n - seen < 12) continue;
-          P.hintSeen.set(m.id, P.n);
-          const it = addHint(seg, { kind: m.kind, label, heard: m.heard, refs: [slimRef(refFromVerse(m.b, m.c, m.v))], why: m.kind === 'quote' ? '直接引用經文，但沒有說出處' : `可能是在呼應這節經文（相似度 ${Math.round(m.sim * 100)}%）` });
-          a.newHints.push(it);
-          if (span) a.marks.push({ ...span, type: 'qt', hid: it.id, label, heard: m.heard, pri: 3 });
-        }
-      }
-      // themes (rolling 3-segment window)
-      if (settings.hints) {
-        const win = P.texts.join('');
-        let nTheme = 0;
-        for (const s of T.scoreThemes(win)) {
-          if (nTheme >= 2) break;
-          const last = P.themeLast.get(s.theme.id);
-          if (last != null && P.n - last < 10) continue;
-          if (!T.scoreThemes(text, { min: 1 }).some((x) => x.theme.id === s.theme.id)) continue; // must be driven by the new segment
-          P.themeLast.set(s.theme.id, P.n); nTheme++;
-          const mentioned = new Set([...seenLabels.keys()]);
-          const refsT = s.theme.verses.map((v) => { try { return R.lookup(v, bible); } catch { return null; } }).filter((r) => r && !mentioned.has(r.label)).slice(0, 4).map(slimRef);
-          if (!refsT.length) continue;
-          const it = addHint(seg, { kind: 'theme', theme: s.theme.name, label: refsT.map((r) => r.label).join('、'), heard: s.hits.slice(0, 3).join('、'), refs: refsT, why: `聽到「${s.hits.slice(0, 3).join('、')}」，相關經文：` });
-          a.newHints.push(it);
-        }
-      }
-    }
-    // curated doctrinal rules
-    if (settings.warn) {
-      for (const w of D.check(text, { prev: P.prev })) {
-        if (w.suppressed) continue;
-        const seen = P.warnSeen.get(w.ruleId);
-        if (seen != null && P.n - seen < 8) continue;
-        P.warnSeen.set(w.ruleId, P.n);
-        const added = addWarning(seg, w);
-        if (added) { a.newWarnings.push(added); a.marks.push({ s: w.start, e: w.end, type: 'wm', wid: added.id, pri: 1 }); }
-      }
-    }
-    for (const r of refs) if (!seenLabels.has(r.label)) seenLabels.set(r.label, r);
-    P.prev = (P.prev + text).slice(-200);
-    return a;
-  }
+  const pipe = PL.create({ R, C, T, V, D, Z: window.TingdaoZh, settings, getBible: () => bible, getIdx: () => vidx, getRules: () => rules, addHint, addWarning });
+
+  /** Process one finalized segment (shared pipeline in pipeline.js). */
+  function processSegment(seg) { return pipe.process(seg); }
 
   /** Rebuild all offline hints/warnings from the transcript (keeps AI-derived ones). */
   function rebuild() {
     const keepH = session.hints.filter((h) => h.src === 'llm'), keepW = session.warnings.filter((w) => w.src === 'llm');
     session.hints = []; session.warnings = [];
-    seenLabels = new Map(); P = freshPipe();
+    pipe.reset();
     for (const s of segments) processSegment(s);
     session.hints.push(...keepH); session.warnings.push(...keepW);
   }
@@ -191,9 +119,9 @@
   }
   function renderStrip() {
     const strip = $('verseStrip');
-    $('verseCount').textContent = String(seenLabels.size);
-    if (!seenLabels.size) { strip.innerHTML = '<span class="muted small">尚未偵測到經節</span>'; return; }
-    strip.innerHTML = [...seenLabels.values()].map((r) => `<button class="chip" data-i="${reg(r)}">${esc(r.label)}</button>`).join('');
+    $('verseCount').textContent = String(pipe.seenLabels.size);
+    if (!pipe.seenLabels.size) { strip.innerHTML = '<span class="muted small">尚未偵測到經節</span>'; return; }
+    strip.innerHTML = [...pipe.seenLabels.values()].map((r) => `<button class="chip" data-i="${reg(r)}">${esc(r.label)}</button>`).join('');
   }
   const KIND = { quote: '引用經文（沒說出處）', allusion: '可能呼應', theme: '相關主題', llm: 'AI 聯想' };
   function renderHints() {
@@ -236,7 +164,7 @@
     if (!raw) return;
     const seg = { id: Date.now() + Math.random(), t: Date.now(), raw };
     segments.push(seg);
-    const beforeRefs = new Set(seenLabels.keys());
+    const beforeRefs = new Set(pipe.seenLabels.keys());
     const a = processSegment(seg);
     const stick = nearBottom();
     const emptyEl = $('emptyHint'); if (emptyEl) emptyEl.remove();
@@ -244,7 +172,7 @@
     div.className = 'seg';
     div.innerHTML = `<time>${fmtTime(seg.t)}</time>${renderText(a)}`;
     elT.appendChild(div);
-    const fresh = [...seenLabels.values()].filter((r) => !beforeRefs.has(r.label));
+    const fresh = [...pipe.seenLabels.values()].filter((r) => !beforeRefs.has(r.label));
     renderStrip(); renderHints(); renderWarnings(); renderSessBar();
     if (a.newWarnings.length) showWarnToast(a.newWarnings[0], a.newWarnings.length);
     else if (fresh.length) showToast(fresh[fresh.length - 1], fresh.length);
@@ -485,7 +413,7 @@
     session.segments = segments.map((s) => ({ id: s.id, t: s.t, raw: s.raw }));
     session.transcript = segments.map((s) => (s.a ? s.a.text : s.raw)).join('\n');
     const seen = new Map();
-    for (const r of [...seenLabels.values(), ...quoteRefs()]) if (!seen.has(r.label)) seen.set(r.label, slimRef(r));
+    for (const r of [...pipe.seenLabels.values(), ...quoteRefs()]) if (!seen.has(r.label)) seen.set(r.label, slimRef(r));
     session.refs = [...seen.values()];
     if (segments.length) session.date = segments[0].t;
     session.updated = Date.now();
@@ -508,7 +436,7 @@
     store = A.memoryStore();
     banner('這個瀏覽器無法使用本機儲存（' + why + '）。紀錄只會暫存在本頁，關閉後消失；請用「匯出」備份。', true);
   }
-  function resetRuntime() { segments = []; seenLabels = new Map(); P = freshPipe(); llmBuf = ''; llmPrev = ''; refRegistry = []; }
+  function resetRuntime() { segments = []; pipe.reset(); llmBuf = ''; llmPrev = ''; refRegistry = []; }
   async function newSessionNow() {
     if (listening) stop();
     await flushLLM(true); await saveNow();
@@ -694,8 +622,19 @@
       if (Date.now() - llmErrAt > 20000) { llmErrAt = Date.now(); toast2('AI 分析暫停（30 秒後重試）：' + e.message); }
     } finally { llmBusy = false; renderSessBar(); if (llmBuf.length >= 220) flushLLM(false); }
   }
+  const CORS_TXT = { ok: '✅ 已實測：可從瀏覽器直接呼叫', opaque: '⚠️ 可呼叫，但金鑰錯誤時瀏覽器只會顯示「無法連線」', local: '🏠 本機服務，需允許本頁來源', unknown: '❔ 未知，請按「測試連線」' };
+  function presetNote() {
+    const p = L.presetFor($('llmEndpoint').value) || L.presetById($('llmPreset').value);
+    $('llmPresetNote').textContent = p ? [CORS_TXT[p.cors], p.note, p.keyUrl ? '取得 Key：' + p.keyUrl : ''].filter(Boolean).join('　') : '';
+  }
+  (function initPresets() {
+    const sel = $('llmPreset'); sel.innerHTML = '<option value="">（請選擇）</option>' + L.PRESETS.map((p) => `<option value="${p.id}">${p.name}</option>`).join('');
+    sel.onchange = () => { const p = L.presetById(sel.value); if (p && p.id !== 'custom') { $('llmEndpoint').value = p.endpoint; $('llmModel').value = p.model; } presetNote(); };
+    $('llmEndpoint').oninput = () => { const p = L.presetFor($('llmEndpoint').value); sel.value = p ? p.id : (sel.value === 'custom' ? 'custom' : ''); presetNote(); };
+  })();
   function fillLLMForm() {
     $('llmOn').checked = llmCfg.enabled; $('llmEndpoint').value = llmCfg.endpoint; $('llmModel').value = llmCfg.model; $('llmKey').value = llmCfg.key; $('llmJson').checked = llmCfg.jsonMode;
+    { const p = L.presetFor(llmCfg.endpoint); $('llmPreset').value = p ? p.id : (llmCfg.endpoint ? 'custom' : ''); presetNote(); }
     $('llmMsg').textContent = llmReady() ? '已啟用。' : (llmCfg.key ? '已儲存，但尚未啟用。' : '尚未設定 Key（離線功能不受影響）。');
   }
   function readLLMForm() {
@@ -750,13 +689,14 @@
   // ---------- settings ----------
   function applyFont() { document.documentElement.style.setProperty('--fs', settings.font + 'px'); }
   $('btnSettings').onclick = () => {
-    $('optGod').value = settings.god; $('optCorrect').checked = settings.correct; $('optKeepAwake').checked = settings.keepAwake;
+    $('optGod').value = settings.god; $('optCorrect').checked = settings.correct; $('optS2t').checked = settings.s2t !== false; $('optKeepAwake').checked = settings.keepAwake;
     $('optHints').checked = settings.hints; $('optWarn').checked = settings.warn;
     $('optFont').value = settings.font; $('dictArea').value = dictText; fillLLMForm(); $('settings').hidden = false;
   };
   const saveSettings = (re) => { LS.set('settings', settings); applyFont(); if (re) rebuild(); renderAll(); };
   $('optGod').onchange = (e) => { settings.god = e.target.value; saveSettings(); };
   $('optCorrect').onchange = (e) => { settings.correct = e.target.checked; saveSettings(true); };
+  $('optS2t').onchange = (e) => { settings.s2t = e.target.checked; saveSettings(true); };
   $('optHints').onchange = (e) => { settings.hints = e.target.checked; saveSettings(true); };
   $('optWarn').onchange = (e) => { settings.warn = e.target.checked; saveSettings(true); };
   $('optKeepAwake').onchange = (e) => { settings.keepAwake = e.target.checked; saveSettings(); };

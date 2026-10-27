@@ -71,11 +71,11 @@
     },
     {
       id: 'give-to-get', title: '「你給神多少，神就加倍還你」的交易式奉獻', level: 'caution', conf: 'medium', attributable: false,
-      re: [/(?:奉獻|獻上|種下|撒種|給神|獻給神|給教會)[^。！？\n]{0,8}(?:神(?:就)?(?:會)?(?:還|回報|賜)你|(?:必|會|就)(?:得到|得著|有)?(?:十倍|百倍|加倍))(?:回來|的回報|奉還|賜福)?/, /(?:十倍|百倍|加倍)(?:回來|奉還|的回報|還給你)/],
+      re: [/(?:奉獻|獻上|種下|撒種|給神|獻給神|給教會)[^。！？\n]{0,8}(?:神(?:就)?(?:會)?(?:還|回報|賜)你|(?:必|會|就)(?:得到|得著|有)?(?:十倍|百倍|加倍))(?:回來|的回報|奉還|賜福)?/, /(?:十倍|百倍|加倍)(?:回來|奉還|的回報|還給你)/, /(?:你)?(?:這個|這樣|這)?(?:就)?(?:會|必|就)(?:有|得|得到|收到|回來|進來)[^。！？\n]{0,3}(?:[二三四五六七八九十百千萬兩\d]+)\s*倍/, /(?:出|給|付出|奉獻|擺上|投資)[^。！？\n]{0,14}(?:就)?(?:會|必)?(?:進來|回來|收到)[^。！？\n]{0,2}(?:[二三四五六七八九十百千萬兩\d]+)(?:萬|千|百)?(?:塊|元|美金)/, /給人的(?:就|必)(?:有|會有)給你的?(?!們)|凡不給人的[^。！？\n]{0,12}(?:奪去|拿走|搶走)/],
       why: '聖經鼓勵樂意、甘心的奉獻（林後 9:6-7），並應許神不會虧欠人；但沒有教導「投資式」的固定回報，更不是用奉獻去換取財富。耶穌也提醒要在天上積攢財寶（太 6:19-21）。',
       verses: ['林後 9:6-7', '太 6:19-21', '路 6:38', '徒 8:18-20'],
       correct: '奉獻是出於愛與感恩，甘心樂意；神必供應，但不是交易（林後 9:7-8）。',
-      pos: ['你奉獻一萬，神就會十倍還你', '種下一個種子，百倍回來'], neg: ['奉獻要出於甘心樂意'],
+      pos: ['你奉獻一萬，神就會十倍還你', '種下一個種子，百倍回來', '你請人吃蛋糕，這個會有二十倍', '你給別人的就必有給你的，凡不給人的連有的也要被奪去'], neg: ['奉獻要出於甘心樂意', '你們要給人，就必有給你們的，這是路加福音六章'],
     },
     {
       id: 'no-hell', title: '否認地獄與最終審判', level: 'error', conf: 'medium', attributable: false,
@@ -253,6 +253,71 @@
       correct: '「我們又要彼此相顧，激發愛心，勉勵行善，你們不可停止聚會」（來 10:24-25）。',
       pos: ['基督徒不需要去教會，自己信就好'], neg: ['我們需要教會生活'],
     },
+    // ---- v3: rules distilled from a real sermon review (general patterns, not that sermon's wording) ----
+    {
+      id: 'kingdom-by-works', title: '「天國／得救取決於你的行為」', level: 'caution', conf: 'medium', attributable: false,
+      re: [/(?:天國|天堂|永生|得救|救恩)(?:的資格|的入場券)?(?:完全|全)?(?:是)?(?:取決於|取決在|決定於|決定在|端看|全看|要看|看你)[^。！？\n]{0,8}(?:如何|怎麼|怎樣|是否|有沒有|對待|愛不愛|行為|做了|付出)/, /(?:能不能|可不可以|能否|是否能)(?:進|得|承受)(?:天國|天堂|永生)[^。！？\n]{0,6}(?:取決於|決定於|看)/],
+      why: '耶穌確實說，待人的態度反映一個人是否真有祂的生命（太 25:31-46；約壹 3:14），但進入天國是本乎恩、因著信，不是出於行為（弗 2:8-9；約 3:3-5）。「愛人」是重生的果子與見證，而不是入場的條件；說成「天國取決於你怎樣對待別人」容易變成行為得救。比較準確的說法是「天國的生命會表現在如何對待人」。',
+      verses: ['弗 2:8-9', '約 3:3-5', '雅 2:14-26', '太 25:34-40'],
+      correct: '人得救是本乎恩，也因著信（弗 2:8-9）；愛人是得救後生命的果子（約壹 4:7-8；雅 2:17）。',
+      pos: ['天國取決於你怎樣對待別人', '你能不能進天國取決於你怎麼對待別人'], neg: ['天國的生命表現在我們如何對待人', '得救是本乎恩'],
+    },
+    {
+      id: 'declare-decree', title: '「開口宣告」被當成能使事成的力量', level: 'debated', conf: 'low', attributable: false,
+      re: [/(?:開口|大聲)(?:來)?(?:宣告|宣稱|命令)(?:你的)?[^。！？\n]{0,6}(?:事業|健康|家庭|財務|生意|身體|經濟|未來)/, /(?:對|為)(?:你的)?(?:事業|健康|家庭|財務|生意|經濟|身體)(?:開口)?(?:來)?(?:宣告|宣稱|發命令)/, /(?:你)?(?:說出來|宣告出來|開口說)(?:了)?(?:就|便|必)(?:會|能)?(?:成就|成真|實現|發生|成為事實)/],
+      why: '依靠信心禱告、感謝與仰望神是合乎聖經的；但把「宣告」說成人說了話就能使事情成就的機制（或命令天使），缺乏經文依據。聖經的次序是：我們向神祈求，神按著祂的旨意行事（約壹 5:14；太 6:10）；天使是遵行神的命令，並非聽人的命令（詩 103:20）。',
+      verses: ['約壹 5:14', '太 6:9-10', '詩 103:20', '雅 4:15'],
+      correct: '我們若照祂的旨意求什麼，祂就聽我們（約壹 5:14）；「主若願意，我們就可以活著，也可以做這事或做那事」（雅 4:15）。',
+      pos: ['你要對你的生意開口宣告', '開口宣告你的健康，說出來就會成就'], neg: ['我們一起開口來禱告', '我們開口讚美神'],
+    },
+    {
+      id: 'end-time-now', title: '斷言「現在就是末世最後的時刻」', level: 'debated', conf: 'low', attributable: false,
+      re: [/(?:現在|如今|這個時代)(?:就)?(?:是|已經是|已經到了?|正是|正處於)[^。！？\n]{0,5}(?:最後|末後|末世|末日)[^。！？\n]{0,3}(?:的)?(?:時刻|時候|時期|階段|日子|時代)/, /(?:我們|已經)(?:已經)?走到(?:了)?(?:最後面|最後一刻|最後的時刻|末世)/, /(?:末世|末日)(?:已經)?(?:到了|來臨了|就在眼前)/],
+      why: '新約說從基督第一次降臨起就已進入「末世」（來 1:2；徒 2:17），但對於主再來的日期，耶穌明說「那日子、那時辰，沒有人知道」（太 24:36；徒 1:7）。以科技或時事潮流斷定「現在就是最後的時刻」，是推測，不是經文的教導。警醒是對的，但不宜作為恐懼或行動的根據。',
+      verses: ['太 24:36', '徒 1:7', '徒 2:17', '帖前 5:1-3'],
+      correct: '「那日子，那時辰，沒有人知道，連天上的使者也不知道，子也不知道，唯有父知道」（太 24:36）。',
+      pos: ['現在已經是最後末世的時刻了', '我們已經走到最後一刻了', '末世已經到了'], neg: ['聖經說末世的日子沒有人知道'],
+    },
+    {
+      id: 'lucifer-lore', title: '關於路西佛與墮落天使的說法（聖經沒有明說）', level: 'debated', conf: 'low', attributable: false,
+      re: [/(?:三分之一)(?:的)?(?:墮落)?天使[^。！？\n]{0,14}(?:墜落|墮落|跟(?:著|隨)|隨著|被丟|反叛|犯罪)/, /三分之一(?:的)?墮落天使/, /路西(?:佛|法)[^。！？\n]{0,8}(?:身上|裡面|掌管|負責|擁有)[^。！？\n]{0,8}(?:音樂|樂器|詩歌|敬拜)/, /(?:撒旦|撒但|魔鬼)(?:原本|本來|原來)(?:的名字)?(?:叫|是)路西(?:佛|法)/],
+      why: '最常被引用的是啟 12:4（龍用尾巴拖拉天上星辰的三分之一）與賽 14:12、結 28:12-17；但前者是異象中的象徵語言，後兩處的直接對象是巴比倫王與推羅王。「三分之一的天使」、「路西佛原是掌管音樂的天使長」是基督教傳統的一種解釋，教會內有不同看法，不宜說成「聖經明確記載」。',
+      verses: ['啟 12:4', '賽 14:12-15', '結 28:12-17', '彼後 2:4'],
+      correct: '聖經確實提到有天使犯罪（彼後 2:4；猶 6），但沒有明確給出比例，也沒有明說「路西佛」是撒但原名。',
+      pos: ['根據聖經，三分之一的天使隨著路西佛墮落', '那三分之一墮落天使', '路西佛身上有各樣樂器'], neg: ['聖經說有天使犯了罪，神沒有寬容他們'],
+    },
+    {
+      id: 'angel-speculation', title: '對天使動向的無經文斷言', level: 'caution', conf: 'low', attributable: false,
+      re: [/天使(?:們)?(?:也|就|要)?(?:即將|快要|馬上|很快就會|首度|第一次)(?:大量|大規模)?(?:出道|出現|出動|降臨|現身|被釋放|釋放)/, /(?:大量|大規模)(?:的)?天使(?:要|即將|將)(?:出動|出現|降臨|被釋放)/, /三分之二[^。！？\n]{0,24}(?:閒閒沒事|閒著|無所事事|暖身|沒(?:什麼)?出動過|還沒出動過|從來沒有出動)/, /暖身了?[二兩三四五六七八九十百千\d]+年/],
+      why: '聖經說天使「都是服役的靈，奉差遣為那將要承受救恩的人效力」（來 1:14，現在式），他們一直在服事神的子民（詩 34:7；太 18:10；徒 12:7-11）。聖經沒有記載「一部分天使閒置到某個世代才首度大規模出動」，也沒有給天使數量的比例。這類說法若出於個人領受，應標明是個人的看法，並用聖經察驗（帖前 5:21）。',
+      verses: ['來 1:14', '詩 34:7', '詩 103:20', '太 18:10', '帖前 5:21'],
+      correct: '天使是服役的靈，一直奉差遣為承受救恩的人效力（來 1:14）；對其動向、數量的細節，聖經沒有說明的就不要說得太肯定。',
+      pos: ['天使即將出道', '天使即將出現在你家裡', '其餘三分之二天使幾乎都沒出動過', '他們已經暖身了五百年'], neg: ['天使在伯利恆的野地向牧羊人顯現', '天使們都是服役的靈'],
+    },
+    {
+      id: 'personal-impression', title: '把個人「領受／感動」說成神的話或聖經的應許', level: 'caution', conf: 'low', attributable: false,
+      re: [/我(?:突然|剛剛|這(?:個)?禮拜|特別|一直|最近)?(?:領受(?:到)?|catch(?:到)?|感動|得到啟示|看見異象|被提醒)[^。！？\n]{0,8}(?:天父|神|主|聖靈|上帝)(?:要|說|正在|想要|將要|已經)/, /(?:天父|神|主|聖靈|上帝)(?:親自)?(?:(?:對我|跟我|向我)(?:說|講|啟示|顯明)|告訴我)/],
+      why: '神今天仍然可以藉聖靈帶領人，但聖經提醒：一切感動與預言都要用聖經察驗（帖前 5:20-21；約壹 4:1；徒 17:11），而且個人的領受不等同於「聖經的應許」或必然成就的事（申 18:20-22）。分享領受時，宜清楚區分「聖經明文」與「我個人的領受」。',
+      verses: ['帖前 5:20-21', '約壹 4:1', '徒 17:11', '申 18:20-22'],
+      correct: '「不要藐視先知的講論，但要凡事察驗，善美的要持守」（帖前 5:20-21）。',
+      pos: ['這禮拜我突然領受到天父要差遣更多的天使', '神告訴我你們這個月會有突破'], neg: ['我領受了神的話語，就是聖經', '我們感動地敬拜神'],
+    },
+    {
+      id: 'bible-fact-slips', title: '常見的聖經人物／事件說法誤差', level: 'caution', conf: 'medium', attributable: false,
+      re: [/雅各[^。！？\n]{0,4}接待(?:了)?(?:過)?(?:天使|神的使者)/, /(?:亞當|夏娃)[^。！？\n]{0,12}(?:吃|偷吃|摘)(?:了)?[^。！？\n]{0,6}蘋果/, /(?:善惡樹|禁果)[^。！？\n]{0,6}是蘋果/, /東方三(?:王|博士|賢士)|三(?:個|位)(?:博士|賢士)(?:來|朝)/, /約拿[^。！？\n]{0,12}鯨魚|鯨魚[^。！？\n]{0,8}約拿/, /(?:人|親人|小孩子?|嬰兒|信徒)(?:死(?:後|了以後)|過世(?:後)?)[^。！？\n]{0,6}(?:變成|成為|做)(?:了)?天使/, /抹大拉(?:的)?馬利亞[^。！？\n]{0,6}(?:是|曾是|原是)(?:一個)?(?:妓女|娼妓|淫婦)/],
+      why: '這是講道裡常見的記憶誤差或流傳說法：「接待天使」的是亞伯拉罕（創 18:1-8）與羅得（創 19:1-3），雅各是遇見神的使者（創 32:1）；創 3 只說「果子」，沒說是蘋果；太 2 只說「有幾個博士」（禮物是三樣）；拿 1:17 是「大魚」；聖經從未說人死後變成天使（天使是受造的另一類靈：來 1:14；太 22:30 只說「如同天上的使者」）；聖經從未說抹大拉的馬利亞是妓女。細節記錯無傷大雅，但若用來立論，值得對照經文。',
+      verses: ['創 18:1-8', '創 19:1-3', '創 3:6', '太 2:1-11', '拿 1:17', '來 1:14'],
+      correct: '請對照經文：「接待客旅的，有人不知不覺就接待了天使」（來 13:2）指的是亞伯拉罕與羅得（創 18–19）。',
+      pos: ['當雅各接待天使的時候', '亞當夏娃吃了蘋果', '東方三王來朝拜', '約拿被鯨魚吞了', '小孩子死後變成天使'], neg: ['亞伯拉罕接待天使', '約拿在大魚肚腹中三日三夜'],
+    },
+    {
+      id: 'bible-count-claim', title: '「聖經裡共有 N 次…」這類精確次數需要查證', level: 'caution', conf: 'low', attributable: false,
+      re: [/(?:整本|全本)?聖經(?:裡面|裡頭|裡|中|當中)?[^。！？\n]{0,8}(?:(?:有|共|總共|一共|大約|約)[^。！？\n]{0,3})?(?:[\d]{2,4}|[一二三四五六七八九]?百[一二三四五六七八九]?十?[一二三四五六七八九]?|[二三四五六七八九]十[一二三四五六七八九]?)\s*(?:次|處|個地方|節)[^。！？\n]{0,6}(?:寫到|提到|說到|記載|講到|出現|提及|說)/],
+      why: '這類「整本聖經提到某事幾次」的精確數字，常因所用譯本、算法（字詞或經節）不同而有出入，也常是流傳的說法（例如「聖經有 365 次說不要懼怕」並沒有可靠根據）。如果拿這個數字來支持結論，建議先用聖經軟體搜尋確認；沒查證前，說「很多次」比較穩妥。',
+      verses: ['箴 14:15', '徒 17:11'],
+      correct: '精確次數依譯本與搜尋方式而異；請以查經軟體或經文索引核對。',
+      pos: ['整本聖經裡有200次提到天使', '聖經中有365次提到不要懼怕', '聖經總共有三百六十五處說不要怕'], neg: ['聖經裡面常常提到天使', '耶穌三次禱告', '約翰福音有二十一章'],
+    },
   ];
 
   // cues that the speaker is quoting a saying in order to correct it (suppress warning)
@@ -271,14 +336,20 @@
   function check(text, opts) {
     opts = opts || {};
     const out = [];
+    // a phrase can straddle two speech-recognition segments: scan the tail of the previous text too, keep matches that end in the new text
+    const ctx = (opts.prev || '').slice(-40), off = ctx.length;
+    text = ctx + text;
     for (const r of RULES) {
-      for (const re of r.re) {
-        const m = re.exec(text);
+      for (const re0 of r.re) {
+        const re = new RegExp(re0.source, re0.flags.replace('g', '') + 'g');
+        let m = null, mm;
+        while ((mm = re.exec(text))) { if (mm.index + mm[0].length > off) { m = mm; break; } if (!mm[0].length) re.lastIndex++; }
         if (!m) continue;
         const i = m.index, j = i + m[0].length;
         const sent = sentenceAt(text, i, j);
         // context = sentence with the match itself removed + the tail of previous sentence(s)
-        const around = text.slice(sent.s, i) + ' ' + text.slice(j, sent.e);
+        // ASR text has no punctuation, so a "sentence" can be a whole 200-char segment: only look at a bounded window around the match for refute cues
+        const around = text.slice(Math.max(sent.s, i - 60), i) + ' ' + text.slice(j, Math.min(sent.e, j + 50));
         const before = (opts.prev ? opts.prev.slice(-30) : '') + text.slice(Math.max(0, sent.s - 40), sent.s);
         if (r.notAfter && r.notAfter.test(text.slice(Math.max(0, i - 3), i))) continue;
         const negated = /(?:不是|並非|並不是|不能|不可|不要|不會|不必|不用|沒有|無法)(?:只)?(?:是)?$/.test(text.slice(Math.max(0, i - 4), i));
@@ -294,11 +365,122 @@
         if (r.attributable && ATTRIB.test(sent.text)) c = Math.min(0.95, c + 0.1);
         if (HEDGE.test(around)) c -= 0.15;
         out.push({
-          ruleId: r.id, level: r.level, title: r.title, heard: m[0], sentence: sent.text.trim(), start: i, end: j,
+          ruleId: r.id, level: r.level, title: r.title, heard: m[0], sentence: sent.text.trim(), start: Math.max(0, i - off), end: j - off,
           why: r.why, verses: r.verses, correct: r.correct, conf: Math.max(0.2, Math.round(c * 100) / 100), suppressed: refutedFinal, src: 'rule',
         });
         break;
       }
+    }
+    return out;
+  }
+
+  // ---- commonly misapplied verses: a well-known verse is recognised (spoken, quoted or cited) AND the surrounding words
+  // show it being pulled toward a meaning its context does not support. Curated, mainstream-Protestant, deliberately modest.
+  // verses: [bookId, chapter, v1, v2]; trig: regex for words that evoke the verse; claim: regex for the stretched application.
+  const APPLIED = [
+    { id: 'chosen-lowly', title: '林前 1:26-29「神揀選卑賤的」不是翻身致富的應許', level: 'caution', conf: 0.6,
+      verses: [[46, 1, 26, 29]], trig: /揀選(?:了)?(?:的)?(?:比較多的)?(?:是)?(?:世上|那些)?(?:愚拙|卑賤|被人厭棄|軟弱)|世上(?:愚拙|卑賤|無有)的/,
+      claim: /翻身|出人頭地|致富|發達|發財|賺大錢|成名|被(?:人)?(?:看見|認識|看重)|脫離(?:貧窮|困境|低谷)|逆轉人生|逆襲|崛起|成功的機會/,
+      why: '林前 1:26-29 的重點是：神揀選世上愚拙、軟弱的，是要叫智慧、有能的人羞愧，「使一切有血氣的，在神面前一個也不能自誇」。它講的是神的恩典與人的謙卑，並不是承諾這些人可以靠某種工具或方法「翻身」、成功或被世人看重。',
+      verses2: ['林前 1:26-31', '雅 2:5', '林後 12:9'], correct: '「使一切有血氣的，在神面前一個也不能自誇」（林前 1:29）；「我的恩典夠你用的，因為我的能力是在人的軟弱上顯得完全」（林後 12:9）。' },
+    { id: 'whoever-has', title: '「凡有的還要加給他」是才幹比喻，不是「給人必有給你」', level: 'caution', conf: 0.6,
+      verses: [[40, 25, 29, 29], [42, 19, 26, 26], [42, 8, 18, 18]], trig: /凡有的[，,]?(?:還|就)?(?:要|會)?(?:再)?加給|凡沒有的[^。！？\n]{0,4}連(?:他|她)?所有的/,
+      claim: /給人|給別人|奉獻|付出|施捨|請客|撒種|慷慨|分享|回報|必有給你|有給你|就有人給|會再給你/,
+      why: '太 25:29、路 19:26 出自「才幹／銀子」的比喻，主題是忠心善用主所託付的；路 8:18 講的是「怎樣聽」。「你們要給人，就必有給你們的」是另一處（路 6:38），脈絡是不要論斷、要饒恕與慷慨。把兩處混為一個「施與就會得到」的屬靈定律，容易變成交易式的理解。',
+      verses2: ['太 25:14-30', '路 19:11-27', '路 6:37-38', '路 8:18'], correct: '「又要饒恕人，就必蒙饒恕；你們要給人，就必有給你們的」（路 6:37-38）與「凡有的，還要加給他」（太 25:29）出處和用意不同。' },
+    { id: 'angels-economy', title: '來 1:14「承受救恩」不等於經濟、事業被天使處理', level: 'caution', conf: 0.6,
+      verses: [[58, 1, 14, 14]], trig: /服役的靈|奉差遣為那將要承受救恩|承受救恩/,
+      claim: /經濟(?:被|得)?(?:救|拯救|轉)|財務|生意|事業(?:被|得)?(?:救|拯救)|身體被救|思想被救|關係被救|自我形[像象]被救|天使要(?:來)?執行|金錢|賺錢|業績/,
+      why: '來 1:14 說天使是服役的靈，奉差遣為「將要承受救恩的人」效力。這裡的救恩主要是末世完全的救恩（來 9:28；彼前 1:3-5），經文沒有說天使負責處理信徒的經濟、事業或各層面問題。神當然關心我們的需要（腓 4:19），但不能由這節經文推出「天使會替你執行」。',
+      verses2: ['來 1:14', '來 9:28', '彼前 1:3-5', '腓 4:19'], correct: '天使是服役的靈，為將要承受救恩的人效力（來 1:14）；神供應我們一切所需用的，是照祂榮耀的豐富（腓 4:19）。' },
+    { id: 'entertain-angels', title: '來 13:2「接待客旅」的脈絡是款待弟兄，不是預告天使將出現或生意接待', level: 'caution', conf: 0.6,
+      verses: [[58, 13, 2, 2]], trig: /接待客旅|不知不覺(?:就|中)?接待了?天使|接待了?天使/,
+      claim: /生意|客戶|業績|公司|產品|天使(?:即將|快要|要)(?:出現|來|降臨)|即將出現|即將出道/,
+      why: '來 13:1-3 的脈絡是弟兄相愛、款待流浪或受苦的信徒與被囚的人；「接待了天使」是回顧亞伯拉罕、羅得等舊約事例（創 18–19）。它不是預言天使將大量出現，也不是商業客戶接待的原則。以愛心款待人本身是好的，但不宜把這節經文轉成「你的客人可能是天使／生意會因此興旺」。',
+      verses2: ['來 13:1-3', '創 18:1-8', '創 19:1-3', '羅 12:13'], correct: '「不可忘記用愛心接待客旅」（來 13:2）；脈絡是弟兄相愛、顧念受苦的人（來 13:1-3）。' },
+    { id: 'jer29-11', title: '耶 29:11 原是對被擄的以色列人說的，不等於個人事業的保證', level: 'caution', conf: 0.55,
+      verses: [[24, 29, 11, 11]], trig: /耶利米書?\s*29|賜你們(?:將來|未來)和(?:盼望|指望)|平安的意念|(?:神|耶和華)(?:對你|為你)?有(?:美好的)?計劃/,
+      claim: /成功|事業(?:一定|必)|升遷|一定(?:會)?(?:順利|成功|發達)|保證|賺大錢|不會(?:失敗|受苦)|所以你(?:的)?(?:生意|公司|事業)/,
+      why: '耶 29:11 是寫給被擄到巴比倫的猶大人，應許七十年後的歸回（29:10）；在這之前他們要在異地建造家園、為城求平安。它顯示神的美意與信實，但不是「個人事業必然成功」的保證。',
+      verses2: ['耶 29:4-14', '羅 8:28', '約 16:33'], correct: '神對被擄之民說：要為所住的城求平安（耶 29:7），七十年後祂必眷顧你們（耶 29:10）。' },
+    { id: 'phil4-13', title: '腓 4:13 的脈絡是「知足」，不是「想成就什麼都能」', level: 'caution', conf: 0.55,
+      verses: [[50, 4, 13, 13]], trig: /我靠著那加給我力量的|憑著那加給我力量的|凡事都能做/,
+      claim: /比賽|考試|冠軍|夢想|業績|任何(?:目標|事)|成就(?:一切|任何)|想要什麼都|升遷|賺大錢|突破(?:一切|所有)/,
+      why: '腓 4:11-13 保羅講的是在豐富、貧窮、飽足、飢餓各種景況中都學會了「知足」的祕訣；「凡事都能做」是指在任何處境中都能經歷基督的力量，並不是應許任何個人目標都會達成。',
+      verses2: ['腓 4:11-13', '林後 12:9', '提前 6:6-8'], correct: '「我無論在什麼景況都可以知足……我靠著那加給我力量的，凡事都能做」（腓 4:11-13）。' },
+    { id: 'mt18-20', title: '太 18:20 的脈絡是教會的懲治與同心，不是「聚會就必得所求」', level: 'caution', conf: 0.55,
+      verses: [[40, 18, 20, 20]], trig: /兩[、，,]?三個人(?:奉我的名|聚會)|奉我的名聚會/,
+      claim: /禱告(?:就|必|都)(?:得|成就|蒙應允|應允)|隨便|任何(?:事|東西)|求(?:什麼|甚麼)(?:就|都)(?:得|成就)|一定(?:成就|應允)/,
+      why: '太 18:15-20 的上下文是教會如何處理弟兄犯罪，並應許教會依主的名所作的決定有主的同在。「兩三個人奉我名聚會，我就在他們中間」確實是安慰，但不能直接推為「人多禱告就必成就任何所求」。',
+      verses2: ['太 18:15-20', '約壹 5:14', '雅 4:3'], correct: '「無論何事，你們中間有兩個人在地上同心合意地求，我天上的父必為他們成全」是在教會的處置脈絡中（太 18:19）。' },
+    { id: 'mustard-seed', title: '芥菜種的信心不是「想要什麼都能得到」', level: 'caution', conf: 0.5,
+      verses: [[40, 17, 20, 20], [42, 17, 6, 6]], trig: /芥菜種|搬山|移山/,
+      claim: /(?:沒有|無)(?:什麼|甚麼)?(?:不可能|難成的)|想要什麼就(?:得|有)|要什麼有什麼|夢想成真|求就得|隨己意|只要你信就(?:一定|必)/,
+      why: '耶穌用芥菜種說明「信心的質」而非「量」，也強調信靠神（可 11:22），但信心的對象是神，信心的內容受神旨意約束（約壹 5:14）；並非保證人的任何願望都會成就（參保羅的刺：林後 12:7-9）。',
+      verses2: ['太 17:20', '可 11:22-24', '約壹 5:14', '林後 12:7-9'], correct: '我們若照祂的旨意求什麼，祂就聽我們（約壹 5:14）。' },
+    { id: 'abundant-life', title: '約 10:10「豐盛的生命」不是指財富', level: 'caution', conf: 0.55,
+      verses: [[43, 10, 10, 10]], trig: /得生命[，,]?(?:並且)?(?:得)?(?:的)?更?豐盛|豐盛的生命|豐盛生命/,
+      claim: /財富|金錢|賺|發財|物質|有錢|富足的生活|事業|名車|豪宅|房子|成功/,
+      why: '約 10:10 的「生命」是耶穌賜給羊的永生與同在（10:27-28），對比的是賊的偷竊、殺害與毀壞。耶穌自己「沒有枕頭的地方」（太 8:20），把「豐盛」解為物質富足，是脫離上下文的解釋。',
+      verses2: ['約 10:10-11', '約 10:27-28', '太 8:20', '提前 6:6-10'], correct: '「我來了，是要叫羊得生命，並且得的更豐盛」——生命來自好牧人為羊捨命（約 10:10-11）。' },
+    { id: 'isa53-heal', title: '賽 53:5「因他受的鞭傷，我們得醫治」的「醫治」有不同理解', level: 'debated', conf: 0.5,
+      verses: [[23, 53, 5, 5]], trig: /鞭傷[^。！？\n]{0,8}(?:得|得到|我們得)?醫治|因(?:著)?(?:祂|他|耶穌祢?|主)(?:的)?鞭傷|因(?:著)?耶穌受的[^。！？\n]{0,8}(?:得|得著)醫治/,
+      claim: /(?:一定|必定|保證|絕對|必然|必)[^。！？\n]{0,6}(?:得|蒙|被)?(?:醫治|痊癒|好起來)|(?:沒有|不)(?:被)?(?:醫治|痊癒)[^。！？\n]{0,8}(?:是因為|就是因為|因為你(?:的)?信心|信心不夠)/,
+      why: '彼得引用這節說：「他被鞭傷，你們便得了醫治」，上下文是「叫我們既然在罪上死，就得以在義上活」（彼前 2:24），主要指罪得赦免、與神和好；太 8:16-17 則把這節與耶穌醫病相連。至於十字架是否「保證」今生身體必得醫治，基督徒之間有不同看法（參保羅的刺：林後 12:7-9）。可以為病者禱告並信靠神，但不宜把醫治當成必然。',
+      verses2: ['賽 53:4-5', '彼前 2:24', '太 8:16-17', '林後 12:7-9'], correct: '他被鞭傷，我們便得了醫治（賽 53:5；彼前 2:24）——上下文首要是罪得赦免與義的生命。' },
+    { id: 'rev3-20', title: '啟 3:20「站在門外叩門」是對老底嘉教會說的', level: 'debated', conf: 0.5,
+      verses: [[66, 3, 20, 20]], trig: /站在門外叩門|門外叩門|我站在門外/,
+      claim: /(?:還沒信|未信|慕道友|不信的人|尚未信主)|(?:請|邀請|接受|讓)耶穌(?:進|進到|進入)(?:你的|你)?心/,
+      why: '啟 3:14-22 是主耶穌寫給老底嘉教會（已是信徒的群體）的責備與呼召：祂在門外，盼望他們重新開門與祂相交。傳福音時常借用這節來邀請未信者，這在應用上可以，但註解上原意是對教會說的。',
+      verses2: ['啟 3:14-22', '約 1:12', '約 3:16'], correct: '這是主對老底嘉教會的呼召（啟 3:19-20）；而向未信者的福音邀請可以引用約 1:12、約 3:16。' },
+  ];
+
+  /** Check recent text for a known verse pulled toward an unsupported meaning.
+   *  win = recent text (previous tail + new text); newFrom = index where the new text starts; cited = [[bookId, ch, v], …] verses cited/recognised nearby. */
+  function checkApplied(win, newFrom, cited) {
+    const out = [];
+    const has = (ent) => (cited || []).some((c) => ent.verses.some((r) => c[0] === r[0] && c[1] === r[1] && c[2] >= r[2] && c[2] <= r[3]));
+    for (const e of APPLIED) {
+      const cm = new RegExp(e.claim.source, 'g'); let claimM = null, mm;
+      while ((mm = cm.exec(win))) { if (mm.index + mm[0].length > newFrom) { claimM = mm; break; } if (!mm[0].length) cm.lastIndex++; }
+      if (!claimM) continue;
+      const tm = e.trig.exec(win);
+      const cited1 = has(e);
+      if (!tm && !cited1) continue;
+      // the evoking words and the stretched application must be close to each other (within ~120 chars)
+      if (tm && !cited1 && Math.abs(tm.index - claimM.index) > 120) continue;
+      const sent = sentenceAt(win, claimM.index, claimM.index + claimM[0].length);
+      const c = Math.min(0.85, e.conf + (cited1 && tm ? 0.1 : 0));
+      out.push({ ruleId: 'applied-' + e.id, level: e.level, title: e.title, heard: (tm ? tm[0] + '…' : '') + claimM[0], sentence: sent.text.trim(), start: Math.max(0, claimM.index - newFrom), end: Math.max(0, claimM.index + claimM[0].length - newFrom),
+        why: e.why, verses: e.verses2, correct: e.correct, conf: Math.round(c * 100) / 100, suppressed: false, src: 'applied' });
+    }
+    return out;
+  }
+
+  // ---- a well-known phrase said while a DIFFERENT book is being cited (common slip: right words, wrong address)
+  // phrase: regex; at: [bookId, chapter]; name: label of the true location
+  const KNOWN_LOC = [
+    { phrase: /身體[^。！？\n]{0,6}(?:成為|是)聖靈的殿|聖靈的殿[^。！？\n]{0,6}(?:你們的|你的|我們的)身體/, at: [46, 6], name: '林前 6:19', say: '「你們的身體就是聖靈的殿」' },
+    { phrase: /憑著信心(?:行事)?[，,]?不是憑著眼見/, at: [47, 5], name: '林後 5:7', say: '「因我們行事為人是憑著信心，不是憑著眼見」' },
+    { phrase: /愛是恆久忍耐[^。！？\n]{0,4}又有恩慈/, at: [46, 13], name: '林前 13:4', say: '愛的真諦' },
+    { phrase: /義人必(?:因|憑)信(?:得生|而活)/, at: [45, 1], alt: [[48, 3], [58, 10], [35, 2]], name: '羅 1:17／加 3:11／來 10:38／哈 2:4', say: '「義人必因信得生」' },
+    { phrase: /神愛世人[^。！？\n]{0,8}(?:賜給|甚至)[^。！？\n]{0,6}(?:獨生子|他的獨生子)/, at: [43, 3], name: '約 3:16', say: '「神愛世人，甚至將他的獨生子賜給他們」' },
+    { phrase: /(?:凡事|在凡事上)(?:謝恩|感謝)[^。！？\n]{0,10}(?:神的旨意|基督耶穌)/, at: [52, 5], name: '帖前 5:18', say: '「凡事謝恩」' },
+  ];
+  /** recentBooks = Set of bookIds explicitly cited in the last few segments. */
+  function checkMisplaced(win, newFrom, recentBooks) {
+    const out = [];
+    if (!recentBooks || !recentBooks.size) return out;
+    for (const k of KNOWN_LOC) {
+      const re = new RegExp(k.phrase.source, 'g'); let m = null, mm;
+      while ((mm = re.exec(win))) { if (mm.index + mm[0].length > newFrom) { m = mm; break; } if (!mm[0].length) re.lastIndex++; }
+      if (!m) continue;
+      const books = [k.at[0]].concat((k.alt || []).map((a) => a[0]));
+      if (books.some((b) => recentBooks.has(b))) continue;
+      const sent = sentenceAt(win, m.index, m.index + m[0].length);
+      out.push({ ruleId: 'misplaced-' + k.at.join('-'), level: 'caution', title: '這句經文出處可能和正在講的書卷不同', heard: m[0], sentence: sent.text.trim(), start: Math.max(0, m.index - newFrom), end: Math.max(0, m.index + m[0].length - newFrom),
+        why: '這句話最常見的出處是 ' + k.name + '，但前面剛提到的是另一卷書。如果是在講那一卷書的內容，可能是把經文記錯了章節或書卷；如果只是順帶引用，建議說明出處。請對照經文確認。',
+        verses: [k.name.split('／')[0]], correct: k.say + '見 ' + k.name + '。', conf: 0.5, suppressed: false, src: 'misplaced' });
     }
     return out;
   }
@@ -311,6 +493,7 @@
     const changed = real.reduce((n, d) => n + Math.max(d.from.length, d.to.length), 0);
     let conf = 0.45 + (m.framed ? 0.1 : 0) + (m.isRef ? 0.1 : 0) + (m.negation ? 0.1 : 0) + Math.min(0.15, changed * 0.03);
     conf = Math.min(0.85, conf);
+    if (!m.negation && changed <= 3) conf = Math.min(conf, 0.54); // small differences are often just speech-recognition error
     const lst = real.slice(0, 3).map((d) => (d.from ? `聽到「${d.from}」` : '少了') + (d.to ? (d.from ? '，經文是「' + d.to + '」' : '「' + d.to + '」') : '，經文沒有這段')).join('；');
     return {
       ruleId: 'misquote', level: 'misquote', title: `引用與${verseLabel}有出入`, heard: m.heard, sentence: m.heard,
@@ -321,5 +504,5 @@
 
   function confLabel(c) { return c >= 0.75 ? '高' : c >= 0.55 ? '中' : '低'; }
 
-  return { RULES, LEVELS, check, misquoteWarning, confLabel, REFUTE, ATTRIB };
+  return { RULES, APPLIED, LEVELS, check, checkApplied, checkMisplaced, misquoteWarning, confLabel, REFUTE, ATTRIB };
 });

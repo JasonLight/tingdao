@@ -13,6 +13,14 @@
   const FUNC = new Set('的了是在也就都和與及而但則之於以其這那個把被讓叫使將所已又還才只更很最會能可要啊呀吧呢嗎哦喔哪阿喔嗯'.split(''));
   const NEG = new Set('不沒無非未莫勿別弗'.split(''));
 
+  // ASR homophone tolerance: a substituted char that sounds alike (服役/福義, 竟/盡) is a mishearing, not a misquote
+  let PY;
+  function pinyin() {
+    if (PY !== undefined) return PY;
+    try { PY = (typeof module === 'object' && module.exports) ? require('./pinyin.js') : (typeof self !== 'undefined' ? self.TingdaoPinyin : null) || null; } catch (e) { PY = null; }
+    return PY;
+  }
+
   /** Normalise for matching. Returns {s, map} where map[i] = index in the original string. 上帝→神 (one char). */
   function norm(str) {
     let s = '', map = [];
@@ -172,6 +180,8 @@
         const f = fuzzyFind(un, win);
         // trim edges: unrecited head/tail of the verse (or stray text) is a partial quote, not a misquote
         let ops = f.ops.slice();
+        const py = pinyin();
+        if (py) ops = ops.map((o) => (o.t === 's' && py.similar(win[o.x], un[o.p]) ? { t: '=', p: o.p, x: o.x, homo: true } : o));
         while (ops.length && ops[0].t !== '=' && ops[0].t !== 's') ops.shift();
         while (ops.length && ops[ops.length - 1].t !== '=' && ops[ops.length - 1].t !== 's') ops.pop();
         if (!ops.length) continue;
@@ -207,10 +217,12 @@
         if (op.t === 's' || op.t === 'i') { const tc = win[op.x]; cur.from += tc; if (!FUNC.has(tc)) onlyFunc = false; if (NEG.has(tc)) negation = true; }
       }
       flush();
-      const effSim = onlyFunc && f.dist <= 3 ? Math.max(sim, 0.97) : sim;
+      // scattered single-char substitutions without a negation are typical speech-recognition noise, not a changed wording
+      const asrNoise = !negation && diffs.length > 0 && diffs.length <= 3 && diffs.every((d) => d.from.length === 1 && d.to.length === 1) && best.coreLen >= 10;
+      const effSim = (onlyFunc && f.dist <= 3) || asrNoise ? Math.max(sim, 0.97) : sim;
       let kind;
       if (effSim >= 0.97) kind = 'quote';
-      else if (effSim >= 0.72 && (framed || isRef)) kind = 'near';
+      else if (effSim >= 0.72 && (isRef || (framed && best.coreLen >= 12 && effSim >= 0.8))) kind = 'near';
       else if (effSim >= 0.72) kind = 'allusion';
       else kind = 'allusion';
       if (kind === 'allusion' && (sim < 0.62 || un.length < 12)) continue;

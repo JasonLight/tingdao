@@ -116,6 +116,7 @@
       <label class="field"><span>經文用字</span>
         <select id="optGod"><option value="神">和合本神版（神）</option><option value="上帝">和合本上帝版（上帝）</option></select></label>
       <label class="field check"><input type="checkbox" id="optCorrect"> <span>自動修正基督教常用詞彙誤辨</span></label>
+      <label class="field check"><input type="checkbox" id="optS2t"> <span>簡體字稿自動轉繁體再比對（逐字稿混有簡體時建議開啟）</span></label>
       <label class="field check"><input type="checkbox" id="optHints"> <span>顯示「相關經文聯想」（離線）</span></label>
       <label class="field check"><input type="checkbox" id="optWarn"> <span>顯示「教義警示」（離線規則）</span></label>
       <label class="field check"><input type="checkbox" id="optKeepAwake"> <span>聆聽時保持螢幕不熄滅（手機建議開啟）</span></label>
@@ -125,6 +126,8 @@
       <h4 class="sub-h">🤖 AI 分析（選用）</h4>
       <p class="muted small">不設定也能完整使用離線功能。若填入你自己的 API Key，可讓 AI 進一步判斷語境、產生摘要。Key 只存在這支手機／瀏覽器的 localStorage，不會上傳到聽道（聽道沒有伺服器）；啟用後，逐字稿片段會直接從你的瀏覽器送到下面的服務。</p>
       <label class="field check"><input type="checkbox" id="llmOn"> <span>啟用 AI 分析與 AI 摘要</span></label>
+      <label class="field"><span>服務（選一個會自動填入位址與建議模型）</span><select id="llmPreset"></select></label>
+      <p id="llmPresetNote" class="muted small"></p>
       <label class="field"><span>API 位址（OpenAI 相容）</span><input id="llmEndpoint" type="url" placeholder="https://api.openai.com/v1" autocomplete="off" spellcheck="false"></label>
       <label class="field"><span>模型</span><input id="llmModel" type="text" placeholder="gpt-4o-mini" autocomplete="off" spellcheck="false"></label>
       <label class="field"><span>API Key</span><input id="llmKey" type="password" placeholder="sk-…" autocomplete="off" spellcheck="false"></label>
@@ -219,11 +222,14 @@
   </div>
 </div>
 
+<script src="js/zhconv.js"></script>
 <script src="js/refs.js"></script>
 <script src="js/corrections.js"></script>
 <script src="js/themes.js"></script>
+<script src="js/pinyin.js"></script>
 <script src="js/verses.js"></script>
 <script src="js/doctrine.js"></script>
+<script src="js/pipeline.js"></script>
 <script src="js/summary.js"></script>
 <script src="js/archive.js"></script>
 <script src="js/llm.js"></script>
